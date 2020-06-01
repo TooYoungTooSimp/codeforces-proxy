@@ -1,0 +1,23 @@
+{
+  "name": "codeforces-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "dayjs": "^1.8.28",
+    "socks-proxy-agent": "^5.0.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^4.0.0-dev.20200601"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.6"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src\\main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
