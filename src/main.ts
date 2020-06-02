@@ -1,11 +1,22 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import axios, { Method } from "axios";
 import dayjs from "dayjs";
+
 declare module "http" {
     interface IncomingMessage {
         body: any
     }
 }
+declare global {
+    interface String {
+        includesAny(strs: string[]): boolean;
+    }
+}
+String.prototype.includesAny = function (strs: string[]) {
+    let _this = this;
+    return strs.some(v => _this.includes(v));
+}
+
 function getSourceUrl(url: string): string {
     if (url.startsWith("/sta"))
         return "https://sta.codeforces.com" + url.slice(4);
@@ -39,14 +50,14 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         });
         res.writeHead(ret.status, ret.headers);
         let data: Buffer = ret.data;
-        if ((ret.headers['content-type'] as string).includes("image")) {
+        if ((ret.headers['content-type'] as string)?.includesAny(["image", "font"])) {
             res.write(data);
         } else {
             let content = data.toString()
-                .replace(/fonts.googleapis.com/g, "fonts.loli.net")
-                .replace(/(https:|http:|)\/\/codeforces.com/g, "/")
-                .replace(/(https:|http:|)\/\/sta.codeforces.com/g, "/sta")
-                .replace(/(https:|http:|)\/\/assets.codeforces.com/g, "/assets");
+                .replace(/fonts\.googleapis\.com/g, "fonts.loli.net")
+                .replace(/(https:|http:|)\/\/codeforces\.com(\/|)/g, "/")
+                .replace(/(https:|http:|)\/\/sta\.codeforces\.com/g, "/sta")
+                .replace(/(https:|http:|)\/\/assets\.codeforces\.com/g, "/assets");
             res.write(content);
         }
         res.end();
