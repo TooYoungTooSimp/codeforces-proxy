@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 
 declare module "http" {
     interface IncomingMessage {
-        body: any
+        body?: Buffer | String
     }
 }
 declare global {
@@ -13,8 +13,7 @@ declare global {
     }
 }
 String.prototype.includesAny = function (strs) {
-    let _this = this;
-    return strs.some(v => _this.includes(v));
+    return strs.some(v => this.includes(v));
 }
 
 function getSourceUrl(url: string): string {
@@ -68,12 +67,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
 createServer(async (req, res) => {
     req.body = null;
     if (req.method === 'POST') {
-        let body = '';
+        let body_parts = [];
         req.on('data', chunk => {
-            body += chunk;
+            body_parts.push(chunk);
         });
         req.on('end', () => {
-            req.body = body;
+            req.body = Buffer.concat(body_parts);
             handleRequest(req, res);
         });
     } else
