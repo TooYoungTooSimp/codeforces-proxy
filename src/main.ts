@@ -12,7 +12,7 @@ declare global {
         includesAny(strs: string[]): boolean;
     }
 }
-String.prototype.includesAny = function (strs: string[]) {
+String.prototype.includesAny = function (strs) {
     let _this = this;
     return strs.some(v => _this.includes(v));
 }
