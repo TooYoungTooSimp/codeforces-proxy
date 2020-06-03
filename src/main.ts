@@ -1,10 +1,13 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import axios, { Method } from "axios";
+import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
 
 declare module "http" {
     interface IncomingMessage {
-        body?: Buffer | String
+        body?: Buffer | String;
+        id: String;
+        ext: any;
     }
 }
 declare global {
@@ -16,6 +19,12 @@ String.prototype.includesAny = function (strs) {
     return strs.some(v => this.includes(v));
 }
 
+function log_info(...msg: any[]) {
+    console.info(dayjs().format(), ...msg);
+}
+function log_warn(...msg: any[]) {
+    console.warn(dayjs().format(), ...msg);
+}
 function getSourceUrl(url: string): string {
     if (url.startsWith("/sta"))
         return "https://sta.codeforces.com" + url.slice(4);
@@ -32,7 +41,7 @@ function getHost(url: string): string {
 }
 async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     try {
-        console.log(`${dayjs().format()} : ${req.url}`);
+        log_info(req.id, "REQ", "       ", req.url);
         let actualHost = getHost(req.url);
         if (req.headers.referer)
             req.headers.referer = req.headers.referer.replace(req.headers.host, actualHost);
@@ -47,6 +56,7 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
             headers: req.headers,
             data: req.body,
         });
+        log_info(req.id, "RET", `${dayjs().diff(req.ext.time, "millisecond")}ms`.padStart(7), req.url);
         res.writeHead(ret.status, ret.headers);
         let data: Buffer = ret.data;
         if ((ret.headers['content-type'] as string)?.includesAny(["image", "font"])) {
@@ -61,10 +71,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
         }
         res.end();
     } catch (error) {
-        console.log(error);
+        log_warn(req.id, "ERR", req.url, error);
     }
 }
 createServer(async (req, res) => {
+    req.id = uuidv4().slice(0, 8);
+    req.ext = { time: dayjs() };
     req.body = null;
     if (req.method === 'POST') {
         let body_parts = [];
