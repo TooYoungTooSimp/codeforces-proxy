@@ -42,14 +42,14 @@ function getHost(url: string): string {
 async function handleRequest(req: IncomingMessage, res: ServerResponse) {
     try {
         log_info(req.id, "REQ", "       ", req.url);
-        let actualHost = getHost(req.url);
+        let actualHost = getHost(req.url!);
         if (req.headers.referer)
-            req.headers.referer = req.headers.referer.replace(req.headers.host, actualHost);
+            req.headers.referer = req.headers.referer.replace(req.headers.host!, actualHost);
         if (req.headers.origin)
-            req.headers.origin = (req.headers.origin as string).replace(req.headers.host, actualHost);
+            req.headers.origin = (req.headers.origin as string).replace(req.headers.host!, actualHost);
         req.headers.host = actualHost;
         let ret = await axios({
-            url: getSourceUrl(req.url),
+            url: getSourceUrl(req.url!),
             method: req.method as Method,
             responseType: "arraybuffer",
             validateStatus: sta => true,
@@ -77,9 +77,9 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse) {
 createServer(async (req, res) => {
     req.id = uuidv4().slice(0, 8);
     req.ext = { time: dayjs() };
-    req.body = null;
+    req.body = undefined;
     if (req.method === 'POST') {
-        let body_parts = [];
+        let body_parts: any[] = [];
         req.on('data', chunk => {
             body_parts.push(chunk);
         });
